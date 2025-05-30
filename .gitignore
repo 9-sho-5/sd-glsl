@@ -1,0 +1,11 @@
+# Node/npm系
+node_modules/
+dist/
+*.log
+
+# Mac系
+.DS_Store
+
+# エディタ
+.vscode/
+.idea/
