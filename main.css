@@ -10,8 +10,17 @@ body {
   width: 100vw;
 }
 
+section {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  &:nth-child(even) {
+    background-color: #000;
+  }
+}
+
 .lead_title {
-  position: fixed;
+  position: absolute;
   top: 50%;
   left: 50%;
   border-right: 4px solid #000; /* カーソル風 */
