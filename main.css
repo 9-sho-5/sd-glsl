@@ -1,0 +1,32 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+}
+
+.lead_title {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  border-right: 4px solid #000; /* カーソル風 */
+  transform: translate(-50%, -50%);
+  padding-right: 8px;
+  font-family: monospace;
+  font-size: 128px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  animation: blink 0.7s step-end infinite;
+}
+
+@keyframes blink {
+  50% {
+    border-color: transparent;
+  }
+}
