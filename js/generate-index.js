@@ -23,6 +23,7 @@ let html = `<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ほしょの遊び場 | GLSL</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="shortcut icon" href="./assets/images/favicon.webp" type="image/x-icon">
   <meta property="og:title" content="GLSL Demo Gallery" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://glsl.hoshokusunose.com/" />
