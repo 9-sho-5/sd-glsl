@@ -52,7 +52,7 @@ html += `      </div>
     <iframe id="previewFrame"></iframe>
   </div>
   <script src="./js/main.js"></script>
-  <script src="./js/screenshot-preview.js"></script>
+  <script src="./js/cube-rooom.js"></script>
   <footer>&copy; Hosho Kusunose</footer>
 </body>
 </html>`;
