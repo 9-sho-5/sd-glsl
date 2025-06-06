@@ -37,8 +37,7 @@ folders.forEach((folder, index) => {
   const number = `#${String(index + 1).padStart(2, "0")}`;
   const title = toTitleCase(folder);
   const href = `./archive/${folder}/index.html`;
-  const thumbPath = `./archive/${folder}/thumbnail.jpg`;
-  html += `        <a class="archive_item" href="${href}" data-thumb="${thumbPath}">
+  html += `        <a class="archive_item" href="${href}">
           <span class="number">${number}</span>
           <span class="name">${title}</span>
           <span class="skill_tag">GLSL</span>
