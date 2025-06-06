@@ -28,7 +28,7 @@ let html = `<!DOCTYPE html>
   <meta property="og:url" content="https://glsl.hoshokusunose.com/" />
   <meta
     property="og:image"
-    content="https://glsl.hoshokusunose.com//ogp.png"
+    content="https://glsl.hoshokusunose.com/ogp.png"
   />
   <meta
     property="og:description"
