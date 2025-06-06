@@ -37,7 +37,8 @@ document.querySelectorAll(".archive_item").forEach((item) => {
 
   item.addEventListener("mouseover", () => {
     const href = item.getAttribute("href");
-    frame.src = href;
+    // src の設定を mouseover 時のみに限定
+    frame.setAttribute("src", href);
     frameContainer.style.display = "block";
   });
 
@@ -47,7 +48,8 @@ document.querySelectorAll(".archive_item").forEach((item) => {
   });
 
   item.addEventListener("mouseout", () => {
+    // display:none よりも先に src をクリアする
+    frame.removeAttribute("src");
     frameContainer.style.display = "none";
-    frame.src = "";
   });
 });
