@@ -35,13 +35,6 @@ let html = `<!DOCTYPE html>
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="GLSL Demo Gallery" />
-  <meta property="og:site_name" content="GLSL Demo Gallery" />
-  <meta property="og:description" content="GLSLを用いた粒子・立体・波・ワームホールなどの視覚表現デモを一覧で体験できます。" />
-  <meta property="og:image" content="https://glsl.hoshokusunose.com/ogp.png" />
-  <meta property="og:url" content="https://glsl.hoshokusunose.com/" />
 </head>
 <body>
   <section id="firstview">
