@@ -30,3 +30,24 @@ function type() {
 }
 
 window.addEventListener("DOMContentLoaded", type);
+
+document.querySelectorAll(".archive_item").forEach((item) => {
+  const frameContainer = document.getElementById("previewFrameContainer");
+  const frame = document.getElementById("previewFrame");
+
+  item.addEventListener("mouseover", () => {
+    const href = item.getAttribute("href");
+    frame.src = href;
+    frameContainer.style.display = "block";
+  });
+
+  item.addEventListener("mousemove", (e) => {
+    frameContainer.style.left = `${e.pageX + 20}px`;
+    frameContainer.style.top = `${e.pageY - 100}px`;
+  });
+
+  item.addEventListener("mouseout", () => {
+    frameContainer.style.display = "none";
+    frame.src = "";
+  });
+});
