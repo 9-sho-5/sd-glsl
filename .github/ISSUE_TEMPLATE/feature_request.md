@@ -1,7 +1,7 @@
 ---
 name: Feature request
 about: Suggest an idea for this project
-title: ''
+title: 参考実装アイデア
 labels: enhancement
 assignees: 9-sho-5
 
