@@ -4,69 +4,117 @@ const path = require("path");
 const baseDir = path.resolve(__dirname, ".."); // ルートに戻る
 const archiveDir = path.join(baseDir, "archive");
 
+// コマンドライン引数
 const command = process.argv[2];
 
-// update-demos コマンド: 全デモのindex.htmlを更新
-if (command === "update-demos") {
-  const demoTemplate = (name) => `<!DOCTYPE html>
+// create コマンド: テンプレートからデモを作成
+if (command === "create") {
+  const demoName = process.argv[3];
+  if (!demoName) {
+    console.error("❌ デモ名を指定してください: npm run generate create <demo-name>");
+    process.exit(1);
+  }
+
+  const demoDir = path.join(archiveDir, demoName);
+  if (fs.existsSync(demoDir)) {
+    console.error(`❌ ${demoName} は既に存在します`);
+    process.exit(1);
+  }
+
+  fs.mkdirSync(demoDir, { recursive: true });
+
+  const indexHtml = `<!DOCTYPE html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${name}</title>
+    <title>${demoName}</title>
     <style>
-      * { box-sizing: border-box; }
       body { margin: 0; overflow: hidden; }
-      .back-btn {
-        position: fixed;
-        top: 16px;
-        left: 16px;
-        z-index: 100;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 14px;
-        background: rgba(0, 0, 0, 0.6);
-        color: #fff;
-        text-decoration: none;
-        font-size: 14px;
-        font-family: sans-serif;
-        border-radius: 6px;
-        backdrop-filter: blur(4px);
-        transition: background 0.2s;
-      }
-      .back-btn:hover { background: rgba(0, 0, 0, 0.8); }
-      @media (max-width: 600px) {
-        .back-btn {
-          top: 12px;
-          left: 12px;
-          padding: 6px 10px;
-          font-size: 12px;
-        }
-      }
     </style>
   </head>
   <body>
-    <a href="../../" class="back-btn">← Back</a>
     <script type="module" src="main.js"></script>
   </body>
 </html>
 `;
 
-  const demos = fs
-    .readdirSync(archiveDir, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && fs.existsSync(path.join(archiveDir, d.name, "index.html")))
-    .map((d) => d.name);
+  const vertexGlsl = `varying vec2 vUv;
 
-  demos.forEach((name) => {
-    const htmlPath = path.join(archiveDir, name, "index.html");
-    fs.writeFileSync(htmlPath, demoTemplate(name));
-  });
+void main() {
+  vUv = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
 
-  console.log(`✅ ${demos.length}件のデモを更新しました`);
+  const fragmentGlsl = `uniform float uTime;
+uniform vec2 uMouse;
+uniform vec2 uResolution;
+varying vec2 vUv;
+
+void main() {
+  vec2 uv = vUv;
+  vec3 color = vec3(uv, 0.5 + 0.5 * sin(uTime));
+  gl_FragColor = vec4(color, 1.0);
+}
+`;
+
+  const mainJs = `import * as THREE from "https://cdn.skypack.dev/three@0.152.2";
+
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+camera.position.z = 1;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+document.body.appendChild(renderer.domElement);
+
+const uniforms = {
+  uTime: { value: 0.0 },
+  uMouse: { value: new THREE.Vector2(0.5, 0.5) },
+  uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+};
+
+const geometry = new THREE.PlaneGeometry(2, 2);
+const material = new THREE.ShaderMaterial({
+  vertexShader: await fetch("./vertex.glsl").then((r) => r.text()),
+  fragmentShader: await fetch("./fragment.glsl").then((r) => r.text()),
+  uniforms,
+});
+
+const mesh = new THREE.Mesh(geometry, material);
+scene.add(mesh);
+
+window.addEventListener("mousemove", (e) => {
+  uniforms.uMouse.value.x = e.clientX / window.innerWidth;
+  uniforms.uMouse.value.y = 1.0 - e.clientY / window.innerHeight;
+});
+
+window.addEventListener("resize", () => {
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+});
+
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  uniforms.uTime.value = clock.getElapsedTime();
+  renderer.render(scene, camera);
+}
+animate();
+`;
+
+  fs.writeFileSync(path.join(demoDir, "index.html"), indexHtml);
+  fs.writeFileSync(path.join(demoDir, "vertex.glsl"), vertexGlsl);
+  fs.writeFileSync(path.join(demoDir, "fragment.glsl"), fragmentGlsl);
+  fs.writeFileSync(path.join(demoDir, "main.js"), mainJs);
+
+  console.log(`✅ ${demoName} を作成しました → archive/${demoName}/`);
   process.exit(0);
 }
 
+// index.html 生成
 const folders = fs
   .readdirSync(archiveDir, { withFileTypes: true })
   .filter(
