@@ -4,6 +4,117 @@ const path = require("path");
 const baseDir = path.resolve(__dirname, ".."); // ルートに戻る
 const archiveDir = path.join(baseDir, "archive");
 
+// コマンドライン引数
+const command = process.argv[2];
+
+// create コマンド: テンプレートからデモを作成
+if (command === "create") {
+  const demoName = process.argv[3];
+  if (!demoName) {
+    console.error("❌ デモ名を指定してください: npm run generate create <demo-name>");
+    process.exit(1);
+  }
+
+  const demoDir = path.join(archiveDir, demoName);
+  if (fs.existsSync(demoDir)) {
+    console.error(`❌ ${demoName} は既に存在します`);
+    process.exit(1);
+  }
+
+  fs.mkdirSync(demoDir, { recursive: true });
+
+  const indexHtml = `<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${demoName}</title>
+    <style>
+      body { margin: 0; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <script type="module" src="main.js"></script>
+  </body>
+</html>
+`;
+
+  const vertexGlsl = `varying vec2 vUv;
+
+void main() {
+  vUv = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
+  const fragmentGlsl = `uniform float uTime;
+uniform vec2 uMouse;
+uniform vec2 uResolution;
+varying vec2 vUv;
+
+void main() {
+  vec2 uv = vUv;
+  vec3 color = vec3(uv, 0.5 + 0.5 * sin(uTime));
+  gl_FragColor = vec4(color, 1.0);
+}
+`;
+
+  const mainJs = `import * as THREE from "https://cdn.skypack.dev/three@0.152.2";
+
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+camera.position.z = 1;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+document.body.appendChild(renderer.domElement);
+
+const uniforms = {
+  uTime: { value: 0.0 },
+  uMouse: { value: new THREE.Vector2(0.5, 0.5) },
+  uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+};
+
+const geometry = new THREE.PlaneGeometry(2, 2);
+const material = new THREE.ShaderMaterial({
+  vertexShader: await fetch("./vertex.glsl").then((r) => r.text()),
+  fragmentShader: await fetch("./fragment.glsl").then((r) => r.text()),
+  uniforms,
+});
+
+const mesh = new THREE.Mesh(geometry, material);
+scene.add(mesh);
+
+window.addEventListener("mousemove", (e) => {
+  uniforms.uMouse.value.x = e.clientX / window.innerWidth;
+  uniforms.uMouse.value.y = 1.0 - e.clientY / window.innerHeight;
+});
+
+window.addEventListener("resize", () => {
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+});
+
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  uniforms.uTime.value = clock.getElapsedTime();
+  renderer.render(scene, camera);
+}
+animate();
+`;
+
+  fs.writeFileSync(path.join(demoDir, "index.html"), indexHtml);
+  fs.writeFileSync(path.join(demoDir, "vertex.glsl"), vertexGlsl);
+  fs.writeFileSync(path.join(demoDir, "fragment.glsl"), fragmentGlsl);
+  fs.writeFileSync(path.join(demoDir, "main.js"), mainJs);
+
+  console.log(`✅ ${demoName} を作成しました → archive/${demoName}/`);
+  process.exit(0);
+}
+
+// index.html 生成
 const folders = fs
   .readdirSync(archiveDir, { withFileTypes: true })
   .filter(
